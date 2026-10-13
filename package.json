@@ -1,0 +1,12 @@
+{
+  "name": "rescuepets",
+  "private": true,
+  "description": "RescuePets: backend (Express + SQLite) y frontend (React/Vite) en un solo servicio",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "npm --prefix frontend ci --include=dev && npm --prefix frontend run build && npm --prefix backend ci",
+    "start": "node backend/index.js"
+  }
+}

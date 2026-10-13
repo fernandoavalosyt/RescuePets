@@ -1,0 +1,15 @@
+/* Estilos del login, aislados bajo .auth para no pisar las utilidades de Tailwind */
+.auth { min-height: 100svh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px 16px; color: #133e37; }
+.auth .card { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 14px; padding: 28px; border: 1px solid #bcd2c6; border-radius: 24px; background: #fff; }
+.auth .card h1 { margin: 0 0 4px; font-size: 24px; font-weight: 800; }
+.auth .field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; }
+.auth .field input { padding: 10px 12px; font-size: 16px; border: 1px solid #c4d3cb; border-radius: 12px; background: transparent; color: inherit; }
+.auth .field input:focus { outline: 2px solid #bcd2c6; border-color: #133e37; }
+.auth .field input[aria-invalid='true'] { border-color: #d93025; }
+.auth .error { color: #d93025; font-size: 13px; font-weight: 400; }
+.auth .form-error { margin: 0; }
+.auth .hint { margin: 0; font-size: 12px; opacity: 0.7; }
+.auth .notice { color: #188038; margin: 0; }
+.auth button { padding: 12px 14px; font-size: 16px; font-weight: 700; border: 0; border-radius: 12px; background: #133e37; color: #fff; cursor: pointer; }
+.auth button:disabled { opacity: 0.6; cursor: wait; }
+.auth button.link { background: none; color: #133e37; padding: 4px; font-size: 14px; font-weight: 500; text-decoration: underline; }

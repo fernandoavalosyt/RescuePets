@@ -1,0 +1,24 @@
+// Huella con corazón (logo del encabezado)
+export const PawHeartIcon = ({ className = 'w-8 h-8' }) => (
+  <svg viewBox="0 0 100 100" fill="currentColor" className={className} aria-hidden="true">
+    <ellipse cx="28" cy="28" rx="10" ry="14" transform="rotate(-20 28 28)" />
+    <ellipse cx="44" cy="18" rx="10" ry="15" transform="rotate(-5 44 18)" />
+    <ellipse cx="64" cy="20" rx="10" ry="15" transform="rotate(10 64 20)" />
+    <ellipse cx="80" cy="32" rx="10" ry="14" transform="rotate(25 80 32)" />
+    <path d="M 22 58 C 18 42, 35 38, 52 48 C 69 38, 86 42, 82 58 C 78 74, 62 86, 52 86 C 42 86, 26 74, 22 58 Z" />
+    <path
+      d="M 52 70 C 52 70, 42 62, 42 56 C 42 52, 46 50, 49 52 C 50.8 53.2, 52 55, 52 55 C 52 55, 53.2 53.2, 55 52 C 58 50, 62 52, 62 56 C 62 62, 52 70, 52 70 Z"
+      fill="#FAFDFB"
+    />
+  </svg>
+)
+
+export const PawPrintIcon = ({ className = 'w-6 h-6' }) => (
+  <svg viewBox="0 0 100 100" fill="currentColor" className={className} aria-hidden="true">
+    <ellipse cx="28" cy="28" rx="10" ry="14" transform="rotate(-20 28 28)" />
+    <ellipse cx="44" cy="18" rx="10" ry="15" transform="rotate(-5 44 18)" />
+    <ellipse cx="64" cy="20" rx="10" ry="15" transform="rotate(10 64 20)" />
+    <ellipse cx="80" cy="32" rx="10" ry="14" transform="rotate(25 80 32)" />
+    <path d="M 22 58 C 18 42, 35 38, 52 48 C 69 38, 86 42, 82 58 C 78 74, 62 86, 52 86 C 42 86, 26 74, 22 58 Z" />
+  </svg>
+)
