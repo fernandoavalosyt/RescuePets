@@ -42,14 +42,23 @@ app.use('/api', originGuard(config.clientOrigin));
 app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 
+// Diagnóstico de despliegue: "served" (todo bien) | "disabled" (falta SERVE_FRONTEND=true) | "missing" (no existe frontend/dist)
+const frontendIndex = path.join(config.frontendDist, 'index.html');
+const frontendState = !config.serveFrontend ? 'disabled' : fs.existsSync(frontendIndex) ? 'served' : 'missing';
+if (frontendState === 'disabled') console.log('[web] Frontend desactivado (define SERVE_FRONTEND=true para servirlo desde este servidor).');
+if (frontendState === 'served') console.log(`[web] Sirviendo el frontend desde ${config.frontendDist}`);
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Backend server is running correctly', frontend: frontendState });
+});
+
 app.use('/api', modules);
 app.use('/api', (req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
 
 // Frontend compilado (React/Vite) servido por este mismo servidor
 if (config.serveFrontend) {
-  const index = path.join(config.frontendDist, 'index.html');
-  if (!fs.existsSync(index)) {
-    console.warn(`[web] SERVE_FRONTEND=true pero no existe ${index}: ejecuta "npm run build".`);
+  const index = frontendIndex;
+  if (frontendState === 'missing') {
+    console.warn(`[web] SERVE_FRONTEND=true pero no existe ${index}: el build del frontend no se ejecutó (revisa el Build Command / Root Directory).`);
   } else {
     // /assets/* tiene nombres con hash: caché larga. index.html nunca se cachea (así llegan las versiones nuevas).
     app.use(express.static(config.frontendDist, {

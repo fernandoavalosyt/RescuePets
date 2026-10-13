@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Bell, CheckCheck, Settings } from 'lucide-react'
+import { Bell, CheckCheck, Settings, X } from 'lucide-react'
 import * as api from './api'
 import { describeNotification } from './notificationText'
 import { navigate } from './useHashRoute'
@@ -117,7 +117,7 @@ export default function NotificationsMenu({ notif }) {
         aria-haspopup="true"
         aria-expanded={open}
         aria-label={counts.unread ? `Notificaciones: ${counts.unread} sin leer` : 'Notificaciones'}
-        className="relative rounded-full border border-[#BCD2C6] p-2 transition-colors hover:bg-[#E9F0EC]"
+        className="relative rounded-full border border-[#BCD2C6] bg-white p-2.5 transition-colors hover:bg-[#E9F0EC] active:scale-95 sm:p-2"
       >
         <Bell className="h-4 w-4" aria-hidden="true" />
         {counts.unread > 0 && (
@@ -128,8 +128,12 @@ export default function NotificationsMenu({ notif }) {
       </button>
 
       {open && (
-        <div role="dialog" aria-label="Notificaciones" className="absolute right-0 z-40 mt-2 w-96 max-w-[92vw] overflow-hidden rounded-3xl border border-[#BCD2C6] bg-white shadow-2xl">
-          <div className="flex items-center justify-between border-b border-[#BCD2C6]/60 px-4 py-3">
+        <>
+        {/* Móvil: hoja inferior con fondo oscuro (no se sale de la pantalla). Escritorio: menú bajo la campana. */}
+        <div className="fixed inset-0 z-40 bg-black/40 sm:hidden" onClick={() => setOpen(false)} aria-hidden="true" />
+        <div role="dialog" aria-label="Notificaciones" className="rp-sheet fixed inset-x-0 bottom-0 z-50 flex max-h-[85dvh] flex-col overflow-hidden rounded-t-3xl border border-[#BCD2C6] bg-white pb-[env(safe-area-inset-bottom)] shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:mt-2 sm:max-h-none sm:w-96 sm:rounded-3xl sm:pb-0">
+          <span className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-[#BCD2C6] sm:hidden" aria-hidden="true" />
+          <div className="flex shrink-0 items-center justify-between border-b border-[#BCD2C6]/60 px-4 py-3">
             <h2 className="text-base font-black">Notificaciones</h2>
             <span className="flex items-center gap-1">
               <button type="button" onClick={notif.markAll} disabled={!counts.unread} title="Marcar como leídas" aria-label="Marcar como leídas" className="rounded-full p-1.5 hover:bg-[#E9F0EC] disabled:opacity-40">
@@ -138,19 +142,22 @@ export default function NotificationsMenu({ notif }) {
               <button type="button" onClick={() => setShowSettings((v) => !v)} aria-pressed={showSettings} title="Preferencias" aria-label="Preferencias de avisos" className="rounded-full p-1.5 hover:bg-[#E9F0EC]">
                 <Settings className="h-4 w-4" />
               </button>
+              <button type="button" onClick={() => setOpen(false)} aria-label="Cerrar" className="rounded-full p-1.5 hover:bg-[#E9F0EC] sm:hidden">
+                <X className="h-4 w-4" />
+              </button>
             </span>
           </div>
 
           {showSettings ? <SettingsPanel /> : (
             <>
-              <div role="tablist" aria-label="Tipo de notificación" className="flex gap-1 px-3 pt-2">
+              <div role="tablist" aria-label="Tipo de notificación" className="flex shrink-0 gap-1 overflow-x-auto px-3 pt-2">
                 {TABS.map((t) => (
                   <button
                     key={t.id}
                     role="tab"
                     aria-selected={group === t.id}
                     onClick={() => notif.changeGroup(t.id)}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${group === t.id ? 'bg-[#133E37] text-white' : 'hover:bg-[#E9F0EC]'}`}
+                    className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold ${group === t.id ? 'bg-[#133E37] text-white' : 'hover:bg-[#E9F0EC]'}`}
                   >
                     {t.label}{t.badge && counts[t.badge] > 0 ? ` (${counts[t.badge]})` : ''}
                   </button>
@@ -158,7 +165,7 @@ export default function NotificationsMenu({ notif }) {
               </div>
               {group === 'nearby' && <p className="px-4 pt-2 text-xs text-[#133E37]/70">Puedes rescatar o ayudar a estos animales.</p>}
 
-              <ul className="mt-1 max-h-[26rem] divide-y divide-[#BCD2C6]/40 overflow-y-auto">
+              <ul className="mt-1 min-h-0 flex-1 divide-y sm:max-h-[26rem] divide-[#BCD2C6]/40 overflow-y-auto overscroll-contain">
                 {items.map((n) => <Item key={n.id} n={n} onOpen={openItem} />)}
               </ul>
               {loading && <p className="p-4 text-center text-sm text-[#133E37]/60">Cargando…</p>}
@@ -174,6 +181,7 @@ export default function NotificationsMenu({ notif }) {
             </>
           )}
         </div>
+        </>
       )}
     </div>
   )
