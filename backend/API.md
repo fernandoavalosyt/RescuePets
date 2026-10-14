@@ -164,6 +164,14 @@ src/
 Nuevo módulo (likes, comentarios, compartir): carpeta en `modules/`, migración nueva en `database/migrations.js`
 (las tablas `post_reactions` y `comments` ya existen) y una línea en `modules/index.js`.
 
+## Asistente de chat (Gemini)
+Requiere sesión y `GEMINI_API_KEY` en el servidor (la key nunca llega al navegador). Límite: 40 preguntas/hora por usuario.
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/chat/config` | `{ enabled }` |
+| POST | `/api/chat` | `{ messages: [{ role: 'user'｜'model', text }] }` (el último debe ser del usuario) → `{ reply }` |
+
 ## Notificaciones push (dispositivo)
 Requieren sesión. Se activan con `VAPID_PUBLIC_KEY` y `VAPID_PRIVATE_KEY`; cada notificación nueva también se envía por Web Push.
 

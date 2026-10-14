@@ -109,7 +109,7 @@ function App() {
   }
 
   if (user) {
-    return <AppShell user={user} onUserChange={setUser} onLogout={() => forgetDevice().then(() => api.logout()).finally(() => { setSkipUsername(false); setUser(null) })} />
+    return <AppShell user={user} onUserChange={setUser} onLogout={() => { try { sessionStorage.removeItem('rp_chat') } catch { /* nada */ } return forgetDevice().then(() => api.logout()).finally(() => { setSkipUsername(false); setUser(null) }) }} />
   }
 
   return (

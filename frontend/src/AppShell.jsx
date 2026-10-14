@@ -9,6 +9,7 @@ import AchievementsView from './AchievementsView'
 import ProfileView from './ProfileView'
 import PostView from './PostView'
 import PublishModal from './PublishModal'
+import ChatPanel from './ChatPanel'
 import NotificationsMenu from './NotificationsMenu'
 import { useFeed } from './useFeed'
 import { useNotifications } from './useNotifications'
@@ -29,6 +30,8 @@ export default function AppShell({ user, onLogout, onUserChange }) {
   const route = useHashRoute()
   const [modalOpen, setModalOpen] = useState(false)
   const [toast, setToast] = useState(null)
+  const [chatOpen, setChatOpen] = useState(false)
+  const closeChat = useCallback(() => setChatOpen(false), [])
   const [query, setQuery] = useState(route.name === 'search' ? route.q : '')
   const [searchNonce, setSearchNonce] = useState(0) // repetir la misma búsqueda recarga los resultados
 
@@ -143,9 +146,22 @@ export default function AppShell({ user, onLogout, onUserChange }) {
       <div className="relative flex min-h-dvh flex-col overflow-x-clip bg-[#FAFAF8] text-[#133E37] selection:bg-[#B7D5C6]">
         <div className="sticky top-0 z-40 border-b border-[#BCD2C6]/50 bg-[#FAFAF8]/95 px-4 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] shadow-sm sm:px-10 sm:py-3 md:px-14 lg:px-16">
         <header className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-3 gap-y-2 text-sm sm:gap-x-4">
-          <a href="#/" className="flex items-center gap-2 font-black" aria-label="RescuePets, ir al inicio">
-            <PawHeartIcon className="h-8 w-8" /> <span className="hidden sm:inline">RescuePets</span>
-          </a>
+          <div className="flex items-center gap-1.5 font-black">
+            {/* La huella abre el asistente (chat con IA) */}
+            <button
+              type="button"
+              onClick={() => setChatOpen((v) => !v)}
+              aria-label="Abrir asistente de RescuePets"
+              aria-haspopup="dialog"
+              aria-expanded={chatOpen}
+              title="Pregúntale a Patitas"
+              className="group relative rounded-full p-1.5 transition-colors hover:bg-[#E9F0EC] active:scale-90"
+            >
+              <PawHeartIcon className="h-8 w-8 transition-transform group-hover:-rotate-12" />
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#133E37] text-[9px] font-bold text-white ring-2 ring-[#FAFAF8]" aria-hidden="true">?</span>
+            </button>
+            <a href="#/" className="hidden sm:inline" aria-label="RescuePets, ir al inicio">RescuePets</a>
+          </div>
 
           <nav aria-label="Principal" className="hidden items-center gap-1 md:flex">
             <a href="#/" className={navCls(route.name === 'home')} aria-current={route.name === 'home' ? 'page' : undefined}>Inicio</a>
@@ -216,6 +232,7 @@ export default function AppShell({ user, onLogout, onUserChange }) {
           />
         )}
 
+        {chatOpen && <ChatPanel onClose={closeChat} />}
         <BottomNav route={route} user={user} onPublish={openPublish} onLogout={onLogout} />
         <ScrollTop />
 

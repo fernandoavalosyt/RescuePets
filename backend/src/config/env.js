@@ -20,6 +20,13 @@ module.exports = {
   dataDir: process.env.DATA_DIR || path.join(root, 'data'),
   uploadRoot: process.env.UPLOAD_DIR || path.join(root, 'uploads'),
 
+  // Asistente de chat (Google Gemini). La API key SOLO va aquí (variable de entorno), nunca en el frontend.
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY || '',
+    model: process.env.GEMINI_MODEL || 'gemini-flash-latest',
+    baseUrl: process.env.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta/models', // solo para pruebas
+  },
+
   // Notificaciones push (Web Push / VAPID). Genera las claves con: npx web-push generate-vapid-keys
   push: {
     publicKey: process.env.VAPID_PUBLIC_KEY || '',

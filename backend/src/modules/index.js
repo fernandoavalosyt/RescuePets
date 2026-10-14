@@ -17,5 +17,6 @@ router.use(require('./rescues').routes);
 router.use(require('./search').routes);
 router.use('/notifications', require('./notifications').routes);
 router.use('/push', require('./push').routes);
+router.use('/chat', require('./chat').routes);
 
 module.exports = router;

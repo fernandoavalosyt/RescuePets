@@ -39,7 +39,7 @@ app.use('/uploads', express.static(config.uploadRoot, {
 
 app.use(cors({ origin: config.clientOrigin, credentials: true }));
 app.use('/api', originGuard(config.clientOrigin));
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '32kb' }));
 app.use(cookieParser());
 
 // Diagnóstico de despliegue: "served" (todo bien) | "disabled" (falta SERVE_FRONTEND=true) | "missing" (no existe frontend/dist)

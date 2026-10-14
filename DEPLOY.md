@@ -40,6 +40,8 @@ Servicio → **Settings → Volumes → New Volume** → *Mount path*: `/data`.
 | `DATA_DIR` | `/data/db` |
 | `UPLOAD_DIR` | `/data/uploads` |
 
+| `GEMINI_API_KEY` | tu API key de Gemini (https://aistudio.google.com/apikey). Activa el chat "Patitas" |
+| `GEMINI_MODEL` | opcional; por defecto `gemini-flash-latest` |
 | `VAPID_PUBLIC_KEY` | clave pública (ver abajo) |
 | `VAPID_PRIVATE_KEY` | clave privada (ver abajo; es secreta) |
 | `VAPID_SUBJECT` | `mailto:tu-correo@ejemplo.com` |
