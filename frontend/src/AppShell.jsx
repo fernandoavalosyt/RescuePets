@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowUp, Home as HomeIcon, LogOut, Plus, Search, Trophy, User, X } from 'lucide-react'
+import { ArrowUp, Bell, Home as HomeIcon, LogOut, Plus, Search, Trophy, User, X } from 'lucide-react'
 import * as api from './api'
 import { AppContext } from './AppContext'
 import { PawHeartIcon, PawPrintIcon } from './Icons'
@@ -12,6 +12,8 @@ import PublishModal from './PublishModal'
 import NotificationsMenu from './NotificationsMenu'
 import { useFeed } from './useFeed'
 import { useNotifications } from './useNotifications'
+import { usePush } from './usePush'
+import { playNotificationSound, unlockSound } from './sound'
 import { describeNotification } from './notificationText'
 import { navigate, useHashRoute } from './useHashRoute'
 import { getPosition } from './lib'
@@ -96,10 +98,21 @@ export default function AppShell({ user, onLogout, onUserChange }) {
   }, [])
   const notif = useNotifications({
     onIncoming: (n) => {
+      playNotificationSound()
       notify(describeNotification(n).title, n.post ? { href: `#/post/${n.post.id}`, label: 'Ver' } : undefined)
       listeners.current.forEach((fn) => fn(n))
     },
   })
+
+  const push = usePush()
+  useEffect(() => { unlockSound() }, [])
+  // Número de avisos sin leer en el icono de la app instalada
+  const unread = notif.counts.unread
+  useEffect(() => {
+    if (!navigator.setAppBadge) return
+    if (unread > 0) navigator.setAppBadge(unread).catch(() => {})
+    else navigator.clearAppBadge?.().catch(() => {})
+  }, [unread])
 
   const ctx = useMemo(() => ({ user, coords, notify, subscribe }), [user, coords, notify, subscribe])
   const openPublish = () => setModalOpen(true)
@@ -162,7 +175,7 @@ export default function AppShell({ user, onLogout, onUserChange }) {
           </form>
 
           <div className="ml-auto flex items-center gap-2">
-            <NotificationsMenu notif={notif} />
+            <NotificationsMenu notif={notif} push={push} />
             <button onClick={openPublish} className="hidden items-center gap-1.5 rounded-full bg-[#133E37] px-3 py-1.5 font-semibold text-white hover:bg-[#0f322c] sm:inline-flex">
               <Plus className="h-4 w-4" aria-hidden="true" /> Publicar
             </button>
@@ -173,6 +186,8 @@ export default function AppShell({ user, onLogout, onUserChange }) {
           </div>
         </header>
         </div>
+
+        <PushPrompt push={push} />
 
         <div key={route.name} className="rp-fade flex flex-1 flex-col px-4 pb-28 pt-5 sm:px-10 sm:pt-8 md:px-14 md:pb-16 lg:px-16">
           {view}
@@ -264,5 +279,34 @@ function ScrollTop() {
     >
       <ArrowUp className="h-5 w-5" aria-hidden="true" />
     </button>
+  )
+}
+
+const DISMISS_KEY = 'rp_push_dismissed'
+
+/** Invitación (una vez) a activar los avisos del dispositivo. El permiso solo se pide al pulsar el botón. */
+function PushPrompt({ push }) {
+  const [hidden, setHidden] = useState(() => {
+    try { return localStorage.getItem(DISMISS_KEY) === '1' } catch { return false }
+  })
+  if (hidden || push.status !== 'off') return null
+  const dismiss = () => {
+    try { localStorage.setItem(DISMISS_KEY, '1') } catch { /* sin almacenamiento */ }
+    setHidden(true)
+  }
+  return (
+    <div className="rp-fade border-b border-[#BCD2C6]/50 bg-[#E9F0EC] px-4 py-3 sm:px-10 md:px-14 lg:px-16">
+      <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+        <Bell className="h-5 w-5 shrink-0" aria-hidden="true" />
+        <p className="min-w-0 flex-1 basis-56 font-medium">Activa los avisos para enterarte de rescates y animalitos cerca de ti, incluso con el sitio cerrado.</p>
+        <span className="flex items-center gap-2">
+          <button onClick={() => push.enable().then(dismiss)} disabled={push.busy} className="rounded-full bg-[#133E37] px-4 py-2 font-semibold text-white active:scale-95 disabled:opacity-60">
+            {push.busy ? 'Activando…' : 'Activar avisos'}
+          </button>
+          <button onClick={dismiss} className="rounded-full px-3 py-2 font-semibold hover:bg-white/60">Ahora no</button>
+        </span>
+        {push.error && <p className="basis-full text-xs text-red-600" role="alert">{push.error}</p>}
+      </div>
+    </div>
   )
 }

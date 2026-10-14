@@ -47,8 +47,11 @@ const frontendIndex = path.join(config.frontendDist, 'index.html');
 const frontendState = !config.serveFrontend ? 'disabled' : fs.existsSync(frontendIndex) ? 'served' : 'missing';
 if (frontendState === 'disabled') console.log('[web] Frontend desactivado (define SERVE_FRONTEND=true para servirlo desde este servidor).');
 if (frontendState === 'served') console.log(`[web] Sirviendo el frontend desde ${config.frontendDist}`);
+// En producción los datos solo sobreviven a un redespliegue si DATA_DIR/UPLOAD_DIR apuntan a un volumen
+const persistent = !config.isProd || (!!process.env.DATA_DIR && !!process.env.UPLOAD_DIR);
+if (!persistent) console.warn('[data] ATENCIÓN: sin DATA_DIR y UPLOAD_DIR la base de datos y las fotos se BORRAN en cada despliegue (monta un volumen y define ambas variables).');
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Backend server is running correctly', frontend: frontendState });
+  res.json({ status: 'ok', message: 'Backend server is running correctly', frontend: frontendState, storage: persistent ? 'persistent' : 'EPHEMERAL' });
 });
 
 app.use('/api', modules);
@@ -65,6 +68,7 @@ if (config.serveFrontend) {
       index: false,
       setHeaders: (res, file) => {
         if (file.includes(`${path.sep}assets${path.sep}`)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        else if (path.basename(file) === 'sw.js') res.setHeader('Cache-Control', 'no-cache'); // el service worker debe actualizarse siempre
       },
     }));
     app.get(/^\/(?!api\/|uploads\/|ws$).*/, (req, res) => {

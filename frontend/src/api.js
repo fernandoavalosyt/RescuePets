@@ -80,6 +80,11 @@ export const undoRescue = (id) => request(`/posts/${id}/rescue`, { method: 'DELE
 export const getAchievements = (query) => request('/achievements', { query })
 export const getAchievementStats = () => request('/achievements/stats')
 
+// Notificaciones push (dispositivo)
+export const pushConfig = () => request('/push/config')
+export const pushSubscribe = (subscription) => request('/push/subscribe', { method: 'POST', json: { subscription } })
+export const pushUnsubscribe = (endpoint) => request('/push/unsubscribe', { method: 'POST', json: { endpoint } })
+
 // Notificaciones
 export const getNotifications = (query) => request('/notifications', { query })
 export const getUnreadCounts = () => request('/notifications/unread-count')

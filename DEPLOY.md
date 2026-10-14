@@ -40,6 +40,12 @@ Servicio → **Settings → Volumes → New Volume** → *Mount path*: `/data`.
 | `DATA_DIR` | `/data/db` |
 | `UPLOAD_DIR` | `/data/uploads` |
 
+| `VAPID_PUBLIC_KEY` | clave pública (ver abajo) |
+| `VAPID_PRIVATE_KEY` | clave privada (ver abajo; es secreta) |
+| `VAPID_SUBJECT` | `mailto:tu-correo@ejemplo.com` |
+
+**Notificaciones al dispositivo (Web Push):** genera tus claves una sola vez con `npx web-push generate-vapid-keys` (desde `backend/`) y ponlas en Variables. Sin ellas el sitio funciona igual, solo que sin avisos fuera de la página. No las cambies después: los dispositivos ya suscritos dejarían de recibir avisos. En iPhone/iPad solo funcionan con la app añadida a la pantalla de inicio.
+
 `PORT` lo pone Railway. No necesitas `CLIENT_ORIGIN` ni `PUBLIC_URL` (todo es mismo origen).
 Opcional (Google Sheets): `GOOGLE_SHEETS_WEBHOOK_URL`, `GOOGLE_SHEETS_API_KEY`, `GOOGLE_SHEETS_EXPORT_INTERVAL_MIN`
 (ver `backend/.env.example`). **Nunca** pongas la API key en el código ni en GitHub: solo en Variables.

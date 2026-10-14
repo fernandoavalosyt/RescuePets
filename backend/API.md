@@ -164,4 +164,13 @@ src/
 Nuevo módulo (likes, comentarios, compartir): carpeta en `modules/`, migración nueva en `database/migrations.js`
 (las tablas `post_reactions` y `comments` ya existen) y una línea en `modules/index.js`.
 
+## Notificaciones push (dispositivo)
+Requieren sesión. Se activan con `VAPID_PUBLIC_KEY` y `VAPID_PRIVATE_KEY`; cada notificación nueva también se envía por Web Push.
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/push/config` | `{ enabled, publicKey }` (clave VAPID para suscribir el navegador) |
+| POST | `/api/push/subscribe` | `{ subscription: { endpoint, keys: { p256dh, auth } } }`. Solo endpoints https de FCM, Mozilla, Windows o Apple. Máx. 8 dispositivos por usuario |
+| POST | `/api/push/unsubscribe` | `{ endpoint }` |
+
 `npm run test:api` ejecuta la prueba de integración (servidor encendido) y limpia sus datos.

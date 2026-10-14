@@ -20,6 +20,13 @@ module.exports = {
   dataDir: process.env.DATA_DIR || path.join(root, 'data'),
   uploadRoot: process.env.UPLOAD_DIR || path.join(root, 'uploads'),
 
+  // Notificaciones push (Web Push / VAPID). Genera las claves con: npx web-push generate-vapid-keys
+  push: {
+    publicKey: process.env.VAPID_PUBLIC_KEY || '',
+    privateKey: process.env.VAPID_PRIVATE_KEY || '',
+    subject: process.env.VAPID_SUBJECT || 'mailto:admin@rescuepets.app', // contacto del operador (mailto: o https:)
+  },
+
   // Exportación de métricas a Google Sheets (Google Apps Script Web App). La API key SOLO va en .env.
   googleSheets: {
     webhookUrl: process.env.GOOGLE_SHEETS_WEBHOOK_URL || '',

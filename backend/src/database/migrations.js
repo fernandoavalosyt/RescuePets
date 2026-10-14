@@ -349,6 +349,22 @@ const migrations = [
       CREATE UNIQUE INDEX idx_notif_nearby_once ON notifications(user_id, post_id) WHERE type = 'nearby_pet';
     `);
   }, { disableFk: true }),
+
+  // v7: suscripciones Web Push (una por dispositivo/navegador)
+  (db) => {
+    db.exec(`
+      CREATE TABLE push_subscriptions (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        endpoint   TEXT NOT NULL UNIQUE,
+        p256dh     TEXT NOT NULL,
+        auth       TEXT NOT NULL,
+        user_agent TEXT,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_push_user ON push_subscriptions(user_id, created_at);
+    `);
+  },
 ];
 
 function migrate(db, target = migrations.length) {

@@ -4,6 +4,7 @@ import * as api from './api'
 import { describeNotification } from './notificationText'
 import { navigate } from './useHashRoute'
 import { timeAgo } from './lib'
+import { playNotificationSound, setSoundEnabled, soundEnabled } from './sound'
 
 const TABS = [
   { id: 'all', label: 'Todas' },
@@ -11,7 +12,51 @@ const TABS = [
   { id: 'activity', label: 'Actividad', badge: 'activity' },
 ]
 
-function SettingsPanel() {
+const PUSH_HELP = {
+  unsupported: 'Este navegador no admite avisos en el dispositivo.',
+  'ios-install': 'En iPhone/iPad: toca Compartir → "Añadir a pantalla de inicio" y abre RescuePets desde ahí para activar los avisos.',
+  'server-off': 'Los avisos al dispositivo aún no están habilitados en el servidor.',
+  denied: 'Bloqueaste los avisos. Actívalos desde el candado de la barra de direcciones (Permisos → Notificaciones).',
+}
+
+function DeviceSettings({ push }) {
+  const [sound, setSound] = useState(soundEnabled)
+  const on = push.status === 'on'
+  const canToggle = push.status === 'on' || push.status === 'off'
+  return (
+    <div className="space-y-3 border-b border-[#BCD2C6]/60 pb-3">
+      <label className="flex items-center justify-between gap-3">
+        <span>
+          <span className="font-semibold">Avisos en este dispositivo</span>
+          <span className="block text-xs text-[#133E37]/60">Te llegan aunque cierres el sitio.</span>
+        </span>
+        <input
+          type="checkbox"
+          checked={on}
+          disabled={!canToggle || push.busy}
+          onChange={(e) => (e.target.checked ? push.enable() : push.disable())}
+          className="h-5 w-5 accent-[#133E37] disabled:opacity-50"
+        />
+      </label>
+      {PUSH_HELP[push.status] && <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900">{PUSH_HELP[push.status]}</p>}
+      {push.error && <p className="text-xs text-red-600" role="alert">{push.error}</p>}
+      <div className="flex items-center justify-between gap-3">
+        <label className="flex flex-1 items-center justify-between gap-3">
+          <span className="font-semibold">Sonido con el sitio abierto</span>
+          <input
+            type="checkbox"
+            checked={sound}
+            onChange={(e) => { setSound(e.target.checked); setSoundEnabled(e.target.checked); if (e.target.checked) playNotificationSound(true) }}
+            className="h-5 w-5 accent-[#133E37]"
+          />
+        </label>
+        <button type="button" onClick={() => playNotificationSound(true)} className="rounded-full border border-[#BCD2C6] px-3 py-1 text-xs font-semibold hover:bg-[#E9F0EC]">Probar</button>
+      </div>
+    </div>
+  )
+}
+
+function SettingsPanel({ push }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
 
@@ -34,7 +79,8 @@ function SettingsPanel() {
   if (!data) return <p className="p-4 text-sm text-[#133E37]/60">{error || 'Cargando…'}</p>
   const { nearby, radiusKm } = data.settings
   return (
-    <div className="space-y-3 p-4 text-sm">
+    <div className="space-y-3 overflow-y-auto p-4 text-sm">
+      <DeviceSettings push={push} />
       <label className="flex items-center justify-between gap-3">
         <span>
           <span className="font-semibold">Avisarme de animalitos cerca</span>
@@ -83,7 +129,7 @@ function Item({ n, onOpen }) {
 }
 
 /** Campana con contador + panel desplegable (todas · cerca de ti · actividad). `notif` viene de useNotifications. */
-export default function NotificationsMenu({ notif }) {
+export default function NotificationsMenu({ notif, push }) {
   const [open, setOpen] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const box = useRef(null)
@@ -148,7 +194,7 @@ export default function NotificationsMenu({ notif }) {
             </span>
           </div>
 
-          {showSettings ? <SettingsPanel /> : (
+          {showSettings ? <SettingsPanel push={push} /> : (
             <>
               <div role="tablist" aria-label="Tipo de notificación" className="flex shrink-0 gap-1 overflow-x-auto px-3 pt-2">
                 {TABS.map((t) => (

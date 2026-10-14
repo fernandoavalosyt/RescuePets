@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import * as api from './api'
 import { validateIdentifier, validatePassword } from './validators'
 import AppShell from './AppShell'
+import { forgetDevice } from './usePush'
 import UsernameSetup from './UsernameSetup'
 import './App.css'
 
@@ -108,7 +109,7 @@ function App() {
   }
 
   if (user) {
-    return <AppShell user={user} onUserChange={setUser} onLogout={() => api.logout().finally(() => { setSkipUsername(false); setUser(null) })} />
+    return <AppShell user={user} onUserChange={setUser} onLogout={() => forgetDevice().then(() => api.logout()).finally(() => { setSkipUsername(false); setUser(null) })} />
   }
 
   return (

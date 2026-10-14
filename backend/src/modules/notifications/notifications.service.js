@@ -1,5 +1,6 @@
 const repo = require('./notifications.repository');
 const gateway = require('../../realtime/gateway');
+const push = require('../push/push.service');
 const { publicUrl } = require('../../config/env');
 const { distanceKm, boundingBox } = require('../../shared/geo');
 const { AppError } = require('../../shared/errors');
@@ -56,7 +57,9 @@ function create({ userId, type, actorId = null, postId = null, data = null }) {
     const id = repo.insert({ userId, type, actorId, postId, data }, Date.now());
     if (!id) return null;
     const notification = toDTO(repo.findById(id));
-    gateway.publish(userId, { type: 'notification', notification, counts: counts(userId) });
+    const c = counts(userId);
+    gateway.publish(userId, { type: 'notification', notification, counts: c });
+    push.notifyUser(userId, notification, c.unread); // al dispositivo, aunque el sitio esté cerrado
     return notification;
   } catch (e) {
     console.error('[notifications] no se pudo crear:', e.message);
