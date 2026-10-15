@@ -40,6 +40,7 @@ Servicio → **Settings → Volumes → New Volume** → *Mount path*: `/data`.
 | `DATA_DIR` | `/data/db` |
 | `UPLOAD_DIR` | `/data/uploads` |
 
+| `GOOGLE_SHEETS_WEBHOOK_URL` | URL de tu Web App de Apps Script (`https://script.google.com/macros/s/.../exec`). Activa "Exportar a Sheets" en el panel de admin |
 | `ADMIN_PASSWORD` | contraseña del administrador (12+ caracteres). Sin ella el panel de admin queda desactivado |
 | `ADMIN_USERNAME` | opcional; por defecto `admin` |
 | `GEMINI_API_KEY` | tu API key de Gemini (https://aistudio.google.com/apikey). Activa el chat "Patitas" |

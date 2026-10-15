@@ -48,5 +48,6 @@ module.exports = {
     keyParam: process.env.GOOGLE_SHEETS_KEY_PARAM || 'api_key',          // nombre del campo que lee tu script
     keyIn: process.env.GOOGLE_SHEETS_KEY_IN === 'query' ? 'query' : 'body', // dónde viaja la key
     intervalMin: Number(process.env.GOOGLE_SHEETS_EXPORT_INTERVAL_MIN) || 0, // 0 = sin envío automático
+    allowInsecure: process.env.NODE_ENV !== 'production' && process.env.GOOGLE_SHEETS_ALLOW_INSECURE === 'true', // solo pruebas locales
   },
 };

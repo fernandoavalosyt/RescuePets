@@ -21,7 +21,8 @@ const pad = (n) => String(n).padStart(2, '0');
 const formatLocal = (d) =>
   `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 
-const isConfigured = (cfg = config.googleSheets) => !!(cfg.webhookUrl && cfg.apiKey);
+// La key es opcional: solo se envía si existe (tu Apps Script puede no validarla)
+const isConfigured = (cfg = config.googleSheets) => !!cfg.webhookUrl;
 
 /** Lee las métricas de la BD (las publicaciones borradas no cuentan). */
 function buildMetrics(now = new Date()) {
@@ -64,12 +65,14 @@ function parseResponse(status, text) {
  * opts.allowInsecure: solo para pruebas con un servidor local.
  */
 async function send(payload, cfg = config.googleSheets, opts = {}) {
-  if (!isConfigured(cfg)) throw new SheetsError('Falta GOOGLE_SHEETS_WEBHOOK_URL o GOOGLE_SHEETS_API_KEY en el .env.');
+  if (!isConfigured(cfg)) throw new SheetsError('Falta GOOGLE_SHEETS_WEBHOOK_URL.');
   const url = validateUrl(cfg.webhookUrl, opts.allowInsecure);
 
   let body = payload;
-  if (cfg.keyIn === 'query') url.searchParams.set(cfg.keyParam, cfg.apiKey);
-  else body = { ...payload, [cfg.keyParam]: cfg.apiKey };
+  if (cfg.apiKey) {
+    if (cfg.keyIn === 'query') url.searchParams.set(cfg.keyParam, cfg.apiKey);
+    else body = { ...payload, [cfg.keyParam]: cfg.apiKey };
+  }
 
   let lastError;
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {

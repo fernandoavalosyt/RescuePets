@@ -26,6 +26,8 @@ router.post('/logout', (req, res) => {
 router.use(auth.requireAdmin);
 router.get('/me', (req, res) => res.json({ admin: { username: auth.username } }));
 router.get('/stats', (req, res) => res.json(service.getStats()));
+router.get('/sheets', (req, res) => res.json(service.sheetsStatus()));
+router.post('/sheets/export', ipLimiter(6, 10 * 60 * 1000, 'Demasiados envíos. Espera unos minutos.'), wrap(async (req, res) => res.json(await service.exportToSheets(req.ip))));
 router.get('/audit', (req, res) => res.json(service.listAudit(req.query)));
 
 router.get('/users', (req, res) => res.json(service.listUsers(req.query)));

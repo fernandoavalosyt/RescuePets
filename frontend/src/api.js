@@ -92,6 +92,8 @@ export const adminSetStatus = (id, status) => request(`/admin/users/${id}/status
 export const adminLogoutUser = (id) => request(`/admin/users/${id}/logout`, { method: 'POST', json: {} })
 export const adminDeleteUser = (id, confirm) => request(`/admin/users/${id}`, { method: 'DELETE', json: { confirm } })
 export const adminRemovePost = (id) => request(`/admin/posts/${id}`, { method: 'DELETE', json: {} })
+export const adminSheets = () => request('/admin/sheets')
+export const adminExportSheets = () => request('/admin/sheets/export', { method: 'POST', json: {} })
 export const adminAudit = (query) => request('/admin/audit', { query })
 export async function adminExportCsv() {
   const res = await fetch(`${BASE}/admin/users/export.csv`, { credentials: 'include' })

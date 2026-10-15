@@ -1,5 +1,5 @@
 // Exportación manual a Google Sheets:  npm run export:sheets
-// (equivale a ejecutar el script Python original). Requiere GOOGLE_SHEETS_WEBHOOK_URL y GOOGLE_SHEETS_API_KEY en .env
+// (equivale a ejecutar el script Python original). Requiere GOOGLE_SHEETS_WEBHOOK_URL en .env (GOOGLE_SHEETS_API_KEY es opcional)
 const { service } = require('../src/modules/sheets-export');
 
 (async () => {

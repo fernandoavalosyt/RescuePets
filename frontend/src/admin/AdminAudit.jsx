@@ -11,6 +11,8 @@ const LABELS = {
   user_logout: ['Sesiones cerradas', 'bg-stone-200 text-stone-700'],
   user_delete: ['Usuario eliminado', 'bg-red-100 text-red-800'],
   post_remove: ['Publicación eliminada', 'bg-red-100 text-red-800'],
+  export_sheets: ['Exportado a Google Sheets', 'bg-emerald-100 text-emerald-800'],
+  export_sheets_failed: ['Falló la exportación a Sheets', 'bg-amber-100 text-amber-800'],
   export_csv: ['Exportación CSV', 'bg-violet-100 text-violet-800'],
 }
 

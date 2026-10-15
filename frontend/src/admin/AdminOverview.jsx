@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Activity, FileText, HeartHandshake, ShieldBan, Smartphone, UserPlus, Users, Wifi } from 'lucide-react'
+import { Activity, FileText, Sheet, HeartHandshake, ShieldBan, Smartphone, UserPlus, Users, Wifi } from 'lucide-react'
 import * as api from '../api'
+import { btnPrimary } from './adminUi'
 
 function Card({ icon: Icon, label, value, hint, tone = 'bg-white' }) {
   return (
@@ -39,6 +40,49 @@ function SignupChart({ signups }) {
   )
 }
 
+/** Envía las métricas (fecha, usuarios, publicaciones, publicaciones de hoy) a tu hoja de Google Sheets. */
+function SheetsExport() {
+  const [info, setInfo] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [result, setResult] = useState(null) // { ok, text }
+
+  useEffect(() => { api.adminSheets().then(setInfo).catch((e) => setResult({ ok: false, text: e.message })) }, [])
+
+  async function exportNow() {
+    setBusy(true)
+    setResult(null)
+    try {
+      const r = await api.adminExportSheets()
+      setResult({ ok: true, text: `Enviado a Google Sheets: ${r.payload.total_usuarios} usuarios, ${r.payload.total_publicaciones} publicaciones, ${r.payload.publicaciones_hoy} hoy.` })
+      api.adminSheets().then(setInfo).catch(() => {})
+    } catch (e) {
+      setResult({ ok: false, text: e.message })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const p = info?.preview
+  return (
+    <section className="rounded-2xl border border-[#BCD2C6] bg-white p-4 shadow-sm">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-2 text-sm font-bold"><Sheet className="h-4 w-4" aria-hidden="true" /> Exportar a Google Sheets</h2>
+          <p className="mt-1 text-xs text-[#133E37]/60">
+            {info && !info.configured
+              ? 'Falta definir GOOGLE_SHEETS_WEBHOOK_URL en el servidor (ver DEPLOY.md).'
+              : p ? `Se agregará una fila: ${p.fecha_exportacion} · ${p.total_usuarios} usuarios · ${p.total_publicaciones} publicaciones · ${p.publicaciones_hoy} hoy` : 'Cargando…'}
+          </p>
+        </div>
+        <button onClick={exportNow} disabled={busy || !info?.configured} className={`${btnPrimary} shrink-0`}>
+          <Sheet className="h-4 w-4" aria-hidden="true" /> {busy ? 'Enviando…' : 'Exportar a Sheets'}
+        </button>
+      </div>
+      {result && <p className={`mt-3 rounded-xl px-3 py-2 text-xs ${result.ok ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-700'}`} role={result.ok ? 'status' : 'alert'}>{result.text}</p>}
+    </section>
+  )
+}
+
 export default function AdminOverview() {
   const [s, setS] = useState(null)
   const [error, setError] = useState('')
@@ -66,6 +110,7 @@ export default function AdminOverview() {
         <Card icon={ShieldBan} label="Bloqueados" value={s.users.banned} tone={s.users.banned ? 'bg-red-50' : 'bg-white'} />
         <Card icon={Smartphone} label="Avisos push" value={s.pushDevices} hint="Dispositivos suscritos" />
       </div>
+      <SheetsExport />
       <SignupChart signups={s.signups} />
       <p className="text-xs text-[#133E37]/50">
         {s.users.neverLoggedIn} cuenta(s) sin inicio de sesión registrado · {s.comments} comentarios · actualizado {new Date(s.generatedAt).toLocaleTimeString('es')}

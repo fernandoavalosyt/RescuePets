@@ -135,6 +135,25 @@ function removePost(id, ip) {
 
 // En línea = conectado por WebSocket o con actividad en los últimos 5 minutos (misma regla que la tabla)
 const onlineNow = (now) => new Set([...gateway.connectedIds(), ...repo.recentlySeenIds(now - ONLINE_MS)]).size;
+// ---- Exportación a Google Sheets (mismas métricas que el envío automático / npm run export:sheets) ----
+const sheets = require('../sheets-export').service;
+const config = require('../../config/env');
+
+const sheetsStatus = () => ({ configured: sheets.isConfigured(), preview: sheets.buildMetrics() });
+
+async function exportToSheets(ip) {
+  if (!sheets.isConfigured()) throw new AppError(409, 'Falta configurar GOOGLE_SHEETS_WEBHOOK_URL en el servidor.');
+  let r;
+  try {
+    r = await sheets.exportMetrics(config.googleSheets, { allowInsecure: config.googleSheets.allowInsecure });
+  } catch (e) {
+    r = { ok: false, error: e.message };
+  }
+  audit(r.ok ? 'export_sheets' : 'export_sheets_failed', ip, null, r.ok ? JSON.stringify(r.payload) : String(r.error).slice(0, 200));
+  if (!r.ok) throw new AppError(502, r.error || 'Google Sheets no aceptó los datos.');
+  return { exported: true, payload: r.payload, response: r.body?.message ?? null };
+}
+
 const getStats = () => ({ ...repo.stats(Date.now()), online: onlineNow(Date.now()), generatedAt: Date.now() });
 
 function listAudit(q) {
@@ -160,4 +179,4 @@ function exportCsv(ip) {
   return `\uFEFF${head.join(',')}\n${lines.join('\n')}\n`;
 }
 
-module.exports = { listUsers, getUser, updateUser, setStatus, logoutUser, deleteUser, removePost, getStats, listAudit, exportCsv };
+module.exports = { sheetsStatus, exportToSheets, listUsers, getUser, updateUser, setStatus, logoutUser, deleteUser, removePost, getStats, listAudit, exportCsv };
