@@ -365,6 +365,45 @@ const migrations = [
       CREATE INDEX idx_push_user ON push_subscriptions(user_id, created_at);
     `);
   },
+
+  // v8: actividad de usuarios (último acceso) + panel de administración (sesiones y auditoría)
+  (db) => {
+    db.exec(`
+      ALTER TABLE users ADD COLUMN last_login_at INTEGER;
+      ALTER TABLE users ADD COLUMN last_seen_at  INTEGER;
+      ALTER TABLE users ADD COLUMN login_count   INTEGER NOT NULL DEFAULT 0;
+      CREATE INDEX idx_users_seen    ON users(last_seen_at);
+      CREATE INDEX idx_users_created ON users(created_at);
+
+      CREATE TABLE login_events (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        created_at INTEGER NOT NULL,
+        ip         TEXT,
+        user_agent TEXT
+      );
+      CREATE INDEX idx_login_events_user ON login_events(user_id, created_at DESC);
+
+      CREATE TABLE admin_sessions (
+        token_hash TEXT PRIMARY KEY,
+        created_at INTEGER NOT NULL,
+        expires_at INTEGER NOT NULL,
+        ip         TEXT,
+        user_agent TEXT
+      );
+
+      CREATE TABLE admin_audit (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        action      TEXT NOT NULL,
+        target_id   INTEGER,
+        target_name TEXT,
+        detail      TEXT,
+        ip          TEXT,
+        created_at  INTEGER NOT NULL
+      );
+      CREATE INDEX idx_admin_audit ON admin_audit(created_at DESC, id DESC);
+    `);
+  },
 ];
 
 function migrate(db, target = migrations.length) {

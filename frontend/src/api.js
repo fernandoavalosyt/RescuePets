@@ -29,7 +29,7 @@ async function request(path, { method = 'GET', json, form, query } = {}) {
   }
   const data = await res.json().catch(() => ({}))
   if (!res.ok) {
-    if (res.status === 401 && path !== '/auth/login' && path !== '/auth/me') onUnauthorized()
+    if (res.status === 401 && !['/auth/login', '/auth/me', '/admin/login', '/admin/me'].includes(path)) onUnauthorized()
     throw Object.assign(new Error(data.error || 'Error de red.'), { status: res.status, fields: data.fields })
   }
   return data
@@ -79,6 +79,25 @@ export const rejectRescue = (id, reason) => request(`/posts/${id}/rescue/reject`
 export const undoRescue = (id) => request(`/posts/${id}/rescue`, { method: 'DELETE' })
 export const getAchievements = (query) => request('/achievements', { query })
 export const getAchievementStats = () => request('/achievements/stats')
+
+// Administrador (sesión propia, distinta a la de los usuarios)
+export const adminLogin = (json) => request('/admin/login', { method: 'POST', json })
+export const adminLogout = () => request('/admin/logout', { method: 'POST', json: {} })
+export const adminMe = () => request('/admin/me')
+export const adminStats = () => request('/admin/stats')
+export const adminUsers = (query) => request('/admin/users', { query })
+export const adminUser = (id) => request(`/admin/users/${id}`)
+export const adminUpdateUser = (id, json) => request(`/admin/users/${id}`, { method: 'PATCH', json })
+export const adminSetStatus = (id, status) => request(`/admin/users/${id}/status`, { method: 'POST', json: { status } })
+export const adminLogoutUser = (id) => request(`/admin/users/${id}/logout`, { method: 'POST', json: {} })
+export const adminDeleteUser = (id, confirm) => request(`/admin/users/${id}`, { method: 'DELETE', json: { confirm } })
+export const adminRemovePost = (id) => request(`/admin/posts/${id}`, { method: 'DELETE', json: {} })
+export const adminAudit = (query) => request('/admin/audit', { query })
+export async function adminExportCsv() {
+  const res = await fetch(`${BASE}/admin/users/export.csv`, { credentials: 'include' })
+  if (!res.ok) throw new Error('No se pudo exportar.')
+  return res.blob()
+}
 
 // Asistente de chat (Gemini, a través del backend)
 export const chatConfig = () => request('/chat/config')

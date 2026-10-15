@@ -164,6 +164,22 @@ src/
 Nuevo módulo (likes, comentarios, compartir): carpeta en `modules/`, migración nueva en `database/migrations.js`
 (las tablas `post_reactions` y `comments` ya existen) y una línea en `modules/index.js`.
 
+## Panel de administración
+Cuenta única definida por `ADMIN_USERNAME` (por defecto `admin`) y `ADMIN_PASSWORD`; no se registra y no existe en la tabla `users`. Sesión propia (cookie `rp_admin`, 4 h) distinta a la de los usuarios: ninguna sirve en las rutas de la otra. Acceso con 10 intentos/15 min por IP y bloqueo de 15 min tras 5 fallos. Toda acción queda en la bitácora.
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/api/admin/login` · `/logout` | `{ username, password }` |
+| GET | `/api/admin/me` · `/stats` · `/audit?page` | sesión, métricas y bitácora |
+| GET | `/api/admin/users?q&status&sort&dir&page&limit` | lista (status: active, banned, inactive, online; sort: created, seen, login, logins, posts, username) |
+| GET | `/api/admin/users/export.csv` | CSV sin contraseñas |
+| GET | `/api/admin/users/:id` | detalle: accesos, sesiones, publicaciones |
+| PATCH | `/api/admin/users/:id` | `{ username?, displayName? }` (la contraseña no se puede cambiar) |
+| POST | `/api/admin/users/:id/status` | `{ status: 'active'｜'banned' }` (bloquear cierra sus sesiones) |
+| POST | `/api/admin/users/:id/logout` | cierra todas sus sesiones |
+| DELETE | `/api/admin/users/:id` | `{ confirm: '<username>' }`: borra cuenta, datos y fotos |
+| DELETE | `/api/admin/posts/:id` | elimina una publicación |
+
 ## Asistente de chat (Gemini)
 Requiere sesión y `GEMINI_API_KEY` en el servidor (la key nunca llega al navegador). Límite: 40 preguntas/hora por usuario.
 

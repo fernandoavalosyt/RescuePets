@@ -2,11 +2,16 @@ import { useEffect, useState } from 'react'
 import * as api from './api'
 import { validateIdentifier, validatePassword } from './validators'
 import AppShell from './AppShell'
+import AdminApp from './admin/AdminApp'
 import { forgetDevice } from './usePush'
 import UsernameSetup from './UsernameSetup'
 import './App.css'
 
-function AuthForm({ mode, onLoggedIn, onRegistered }) {
+// Un texto con letras y sin "@" no puede ser correo ni teléfono: se intenta como cuenta de administrador.
+// El servidor decide; aquí no se revela si existe.
+const looksLikeAdmin = (v) => /^[A-Za-z][A-Za-z0-9_.-]{2,29}$/.test(v.trim())
+
+function AuthForm({ mode, onLoggedIn, onAdminLoggedIn, onRegistered }) {
   const isRegister = mode === 'register'
   const [values, setValues] = useState({ identifier: '', password: '', confirmPassword: '' })
   const [touched, setTouched] = useState({})
@@ -14,8 +19,9 @@ function AuthForm({ mode, onLoggedIn, onRegistered }) {
   const [formError, setFormError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const adminTry = !isRegister && looksLikeAdmin(values.identifier)
   const errors = {
-    identifier: validateIdentifier(values.identifier),
+    identifier: adminTry ? '' : validateIdentifier(values.identifier),
     password: isRegister ? validatePassword(values.password) : values.password ? '' : 'La contraseña es obligatoria.',
     confirmPassword: isRegister && values.password !== values.confirmPassword ? 'Las contraseñas no coinciden.' : '',
   }
@@ -37,6 +43,9 @@ function AuthForm({ mode, onLoggedIn, onRegistered }) {
       if (isRegister) {
         await api.register(values)
         onRegistered()
+      } else if (adminTry) {
+        const { admin } = await api.adminLogin({ username: values.identifier.trim(), password: values.password })
+        onAdminLoggedIn(admin)
       } else {
         const { user } = await api.login(values)
         onLoggedIn(user)
@@ -84,6 +93,7 @@ function AuthForm({ mode, onLoggedIn, onRegistered }) {
 
 function App() {
   const [user, setUser] = useState(null)
+  const [admin, setAdmin] = useState(null)
   const [mode, setMode] = useState('login')
   const [notice, setNotice] = useState('')
   const [ready, setReady] = useState(false)
@@ -98,11 +108,18 @@ function App() {
 
   useEffect(() => {
     // Si la sesión expira mientras se usa la app, vuelve al login
-    api.setUnauthorizedHandler(() => { setNotice('Tu sesión expiró. Inicia sesión de nuevo.'); setUser(null) })
-    api.me().then((d) => setUser(d.user)).catch(() => {}).finally(() => setReady(true))
+    api.setUnauthorizedHandler(() => { setNotice('Tu sesión expiró. Inicia sesión de nuevo.'); setUser(null); setAdmin(null) })
+    // Sesión de usuario; si no hay, se comprueba si es la del administrador
+    api.me().then((d) => setUser(d.user))
+      .catch(() => api.adminMe().then((d) => setAdmin(d.admin)).catch(() => {}))
+      .finally(() => setReady(true))
   }, [])
 
   if (!ready) return null
+
+  if (admin) {
+    return <AdminApp admin={admin} onLogout={() => api.adminLogout().finally(() => setAdmin(null))} />
+  }
 
   if (user && !user.usernameSet && !skipUsername) {
     return <UsernameSetup user={user} onDone={setUser} onSkip={() => setSkipUsername(true)} />
@@ -119,6 +136,7 @@ function App() {
         key={mode}
         mode={mode}
         onLoggedIn={setUser}
+        onAdminLoggedIn={setAdmin}
         onRegistered={() => { setNotice('Cuenta creada. Ahora inicia sesión.'); setMode('login') }}
       />
       <button className="link" onClick={() => { setNotice(''); setMode(mode === 'login' ? 'register' : 'login') }}>

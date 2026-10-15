@@ -51,4 +51,4 @@ function validateCoordinates(body) {
   return Object.keys(errors).length ? { errors } : { value: { latitude: lat, longitude: lng } };
 }
 
-module.exports = { validateUsername, validateProfile, validateCoordinates };
+module.exports = { validateUsername, validateDisplayName, validateProfile, validateCoordinates };

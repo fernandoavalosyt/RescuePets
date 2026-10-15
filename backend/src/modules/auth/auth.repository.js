@@ -7,6 +7,15 @@ const createUser = ({ username, email, phone, passwordHash, now }) =>
   db.prepare(`INSERT INTO users (username, email, phone, display_name, password_hash, created_at, updated_at)
               VALUES (?, ?, ?, ?, ?, ?, ?)`).run(username, email, phone, username, passwordHash, now, now);
 
+/** Registra un inicio de sesión (conserva solo los últimos 20 por usuario). */
+function recordLogin(userId, ip, userAgent, now) {
+  db.prepare('UPDATE users SET last_login_at = ?, last_seen_at = ?, login_count = login_count + 1 WHERE id = ?').run(now, now, userId);
+  db.prepare('INSERT INTO login_events (user_id, created_at, ip, user_agent) VALUES (?, ?, ?, ?)').run(userId, now, ip, userAgent);
+  db.prepare(`DELETE FROM login_events WHERE user_id = ? AND id NOT IN
+              (SELECT id FROM login_events WHERE user_id = ? ORDER BY created_at DESC, id DESC LIMIT 20)`).run(userId, userId);
+}
+const touchSeen = (userId, now) => db.prepare('UPDATE users SET last_seen_at = ? WHERE id = ?').run(now, userId);
+
 const setAttempts = (id, attempts, lockedUntil) =>
   db.prepare('UPDATE users SET failed_attempts = ?, locked_until = ? WHERE id = ?').run(attempts, lockedUntil, id);
 
@@ -21,4 +30,4 @@ const findSessionUser = (tokenHash) =>
 const deleteSession = (tokenHash) => db.prepare('DELETE FROM sessions WHERE token_hash = ?').run(tokenHash);
 const purgeExpiredSessions = () => db.prepare('DELETE FROM sessions WHERE expires_at < ?').run(Date.now());
 
-module.exports = { findActiveByIdentifier, createUser, setAttempts, createSession, findSessionUser, deleteSession, purgeExpiredSessions };
+module.exports = { recordLogin, touchSeen, findActiveByIdentifier, createUser, setAttempts, createSession, findSessionUser, deleteSession, purgeExpiredSessions };

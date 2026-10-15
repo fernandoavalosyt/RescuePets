@@ -20,6 +20,13 @@ module.exports = {
   dataDir: process.env.DATA_DIR || path.join(root, 'data'),
   uploadRoot: process.env.UPLOAD_DIR || path.join(root, 'uploads'),
 
+  // Cuenta de administrador (no es un usuario de la red social: no existe en la tabla users ni se registra).
+  // Sin ADMIN_PASSWORD el panel queda desactivado. La contraseña SOLO va en variables de entorno.
+  admin: {
+    username: (process.env.ADMIN_USERNAME || 'admin').trim().toLowerCase(),
+    password: process.env.ADMIN_PASSWORD || '',
+  },
+
   // Asistente de chat (Google Gemini). La API key SOLO va aquí (variable de entorno), nunca en el frontend.
   gemini: {
     apiKey: process.env.GEMINI_API_KEY || '',

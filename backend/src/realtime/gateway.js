@@ -27,6 +27,7 @@ function publish(userId, payload) {
 }
 
 const isConnected = (userId) => (clients.get(userId)?.size ?? 0) > 0;
+const connectedIds = () => [...clients.keys()];
 
 function reject(socket, status, text) {
   socket.write(`HTTP/1.1 ${status} ${text}\r\nConnection: close\r\n\r\n`);
@@ -69,6 +70,7 @@ function attach(server, { getInitial } = {}) {
       ws.on('message', () => {}); // el canal es solo de salida; se ignora lo que envíe el cliente
       ws.on('error', () => ws.terminate());
       ws.on('close', () => {
+        try { require('../modules/auth/auth.repository').touchSeen(user.id, Date.now()); } catch { /* solo informativo */ }
         const set = clients.get(user.id);
         set?.delete(ws);
         if (set && !set.size) clients.delete(user.id);
@@ -98,4 +100,4 @@ function attach(server, { getInitial } = {}) {
   };
 }
 
-module.exports = { attach, publish, isConnected };
+module.exports = { attach, publish, isConnected, connectedIds };

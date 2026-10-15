@@ -56,7 +56,7 @@ async function register({ identifier, password, confirmPassword }) {
   throw new Error('No se pudo generar un username único.');
 }
 
-async function login({ identifier, password }) {
+async function login({ identifier, password }, meta = {}) {
   const id = validateIdentifier(identifier);
   if (id.error || typeof password !== 'string' || !password || password.length > 128) {
     throw new AppError(400, GENERIC_LOGIN_ERROR);
@@ -80,6 +80,7 @@ async function login({ identifier, password }) {
   repo.setAttempts(user.id, 0, 0);
   const token = newToken();
   repo.createSession(sha256(token), user.id, Date.now() + SESSION_MS);
+  repo.recordLogin(user.id, String(meta.ip ?? '').slice(0, 64) || null, String(meta.userAgent ?? '').slice(0, 200) || null, Date.now());
   return { user: toPublicUser(user), token };
 }
 

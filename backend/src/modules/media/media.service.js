@@ -40,9 +40,9 @@ async function saveImage(buffer, folder = 'posts') {
 // Borra archivos por su URL relativa (huérfanos tras un error, o imágenes eliminadas).
 async function removeFiles(urls) {
   await Promise.all(urls.map((u) => {
-    const file = path.join(uploadRoot, u.replace(/^\/uploads\//, ''));
+    const file = path.resolve(uploadRoot, u.replace(/^\/uploads\//, ''));
     // Defensa extra: solo dentro de uploadRoot
-    return file.startsWith(uploadRoot + path.sep) ? fs.unlink(file).catch(() => {}) : null;
+    return file.startsWith(path.resolve(uploadRoot) + path.sep) ? fs.unlink(file).catch(() => {}) : null;
   }));
 }
 

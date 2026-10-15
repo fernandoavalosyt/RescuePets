@@ -10,7 +10,7 @@ async function register(req, res) {
 }
 
 async function login(req, res) {
-  const { user, token } = await service.login(req.body ?? {});
+  const { user, token } = await service.login(req.body ?? {}, { ip: req.ip, userAgent: req.get('user-agent') });
   res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: service.SESSION_MS });
   res.json({ user });
 }
